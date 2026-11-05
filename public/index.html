@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>agent-playground</title>
+<title>任务清单</title>
 <style>
   :root { color-scheme: light dark; --line: #d0d7de; --muted: #656d76; }
   * { box-sizing: border-box; }
@@ -45,20 +45,20 @@
 </style>
 </head>
 <body>
-<h1>agent-playground</h1>
-<p class="hint">A demo task board. The API lives under <code>/api/tasks</code>.</p>
+<h1>任务清单</h1>
+<p class="hint">一个演示任务板。API 位于 <code>/api/tasks</code>。</p>
 
 <form id="new">
-  <input id="title" type="text" placeholder="What needs doing?" autocomplete="off" required>
-  <input id="due" type="date" aria-label="Due date" title="Due date">
-  <select id="priority" aria-label="Priority" title="Priority">
+  <input id="title" type="text" placeholder="需要做什么？" autocomplete="off" required>
+  <input id="due" type="date" aria-label="截止日期" title="截止日期">
+  <select id="priority" aria-label="优先级" title="优先级">
     <option value="1">1</option>
     <option value="2">2</option>
     <option value="3" selected>3</option>
     <option value="4">4</option>
     <option value="5">5</option>
   </select>
-  <button type="submit">Add</button>
+  <button type="submit">添加</button>
 </form>
 <p class="error" id="error"></p>
 
@@ -82,7 +82,7 @@ async function load() {
   if (!tasks.length) {
     const empty = document.createElement('li');
     empty.className = 'empty';
-    empty.textContent = 'No tasks yet.';
+    empty.textContent = '还没有任务。';
     list.append(empty);
     return;
   }
@@ -112,8 +112,8 @@ function row(task) {
   due.type = 'date';
   due.className = 'due';
   due.value = task.due || '';
-  due.setAttribute('aria-label', 'Due date');
-  due.title = 'Due date';
+  due.setAttribute('aria-label', '截止日期');
+  due.title = '截止日期';
   due.addEventListener('change', async () => {
     await api('/api/tasks/' + task.id, {
       method: 'PATCH',
@@ -124,8 +124,8 @@ function row(task) {
 
   const priority = document.createElement('select');
   priority.className = 'priority';
-  priority.setAttribute('aria-label', 'Priority');
-  priority.title = 'Priority';
+  priority.setAttribute('aria-label', '优先级');
+  priority.title = '优先级';
   for (let value = 1; value <= 5; value++) {
     const option = document.createElement('option');
     option.value = String(value);
@@ -142,7 +142,7 @@ function row(task) {
   });
 
   const remove = document.createElement('button');
-  remove.textContent = 'Remove';
+  remove.textContent = '删除';
   remove.addEventListener('click', async () => {
     await api('/api/tasks/' + task.id, { method: 'DELETE' }).then(load).catch(show);
   });
