@@ -27,6 +27,23 @@ test('stores an optional due date, defaulting to null', () => {
   assert.throws(() => store.create(tasks, { title: 'e', due: '2026-02-30' }), /valid date/);
 });
 
+test('stores a priority, defaulting to 3', () => {
+  const withPriority = store.create(tasks, { title: 'a', priority: 5 });
+  assert.equal(withPriority.priority, 5);
+  const withStringPriority = store.create(tasks, { title: 'b', priority: '2' });
+  assert.equal(withStringPriority.priority, 2);
+  const defaultPriority = store.create(tasks, { title: 'c' });
+  assert.equal(defaultPriority.priority, 3);
+});
+
+test('rejects a priority outside 1-5', () => {
+  assert.throws(() => store.create(tasks, { title: 'a', priority: 0 }), /between 1 and 5/);
+  assert.throws(() => store.create(tasks, { title: 'b', priority: 6 }), /between 1 and 5/);
+  assert.throws(() => store.create(tasks, { title: 'c', priority: 2.5 }), /between 1 and 5/);
+  assert.throws(() => store.create(tasks, { title: 'd', priority: 'high' }), /between 1 and 5/);
+  assert.throws(() => store.create(tasks, { title: 'e', priority: true }), /between 1 and 5/);
+});
+
 test('trims the title and rejects an empty one', () => {
   assert.equal(store.create(tasks, { title: '  spaced  ' }).title, 'spaced');
   assert.throws(() => store.create(tasks, { title: '   ' }), /title is required/);
@@ -52,6 +69,14 @@ test('updates and clears a due date', () => {
   assert.equal(store.update(tasks, task.id, { due: '2027-01-01' }).due, '2027-01-01');
   assert.equal(store.update(tasks, task.id, { due: null }).due, null);
   assert.throws(() => store.update(tasks, task.id, { due: 'nope' }), /valid date/);
+});
+
+test('updates a priority, rejecting an invalid one', () => {
+  const task = store.create(tasks, { title: 'a' });
+  assert.equal(task.priority, 3);
+  assert.equal(store.update(tasks, task.id, { priority: 1 }).priority, 1);
+  assert.throws(() => store.update(tasks, task.id, { priority: 9 }), /between 1 and 5/);
+  assert.equal(store.update(tasks, task.id, { priority: 5 }).priority, 5);
 });
 
 test('removes a task, and reports a missing one', () => {

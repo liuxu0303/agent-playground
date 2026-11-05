@@ -31,8 +31,8 @@ No dependencies, no build step.
 | Method | Path | Does |
 | --- | --- | --- |
 | `GET` | `/api/tasks` | Lists tasks |
-| `POST` | `/api/tasks` | Creates a task from `{"title": "…", "due": "YYYY-MM-DD"}` (`due` is optional) |
-| `PATCH` | `/api/tasks/:id` | Updates `title`, `done`, or `due` |
+| `POST` | `/api/tasks` | Creates a task from `{"title": "…", "due": "YYYY-MM-DD", "priority": 1-5}` (`due` and `priority` are optional; priority defaults to 3) |
+| `PATCH` | `/api/tasks/:id` | Updates `title`, `done`, `due`, or `priority` |
 | `DELETE` | `/api/tasks/:id` | Removes a task |
 
 ## Good things to ask the agent for
