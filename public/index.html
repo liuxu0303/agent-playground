@@ -42,6 +42,8 @@
   li select { padding: .25rem .5rem; }
   .empty { color: var(--muted); padding: 1.5rem 0; text-align: center; }
   .error { color: #cf222e; font-size: .875rem; min-height: 1.25rem; margin: .5rem 0 0; }
+  .toolbar { display: flex; align-items: center; gap: .5rem; margin: 1rem 0 0; }
+  .toolbar label { color: var(--muted); font-size: .875rem; }
 </style>
 </head>
 <body>
@@ -60,6 +62,16 @@
   </select>
   <button type="submit">Add</button>
 </form>
+
+<div class="toolbar">
+  <label for="filter">Show</label>
+  <select id="filter" aria-label="Filter by status" title="Filter by status">
+    <option value="">All</option>
+    <option value="false">Not done</option>
+    <option value="true">Done</option>
+  </select>
+</div>
+
 <p class="error" id="error"></p>
 
 <ul id="list"></ul>
@@ -67,6 +79,7 @@
 <script>
 const list = document.getElementById('list');
 const error = document.getElementById('error');
+const filter = document.getElementById('filter');
 
 async function api(path, options) {
   const response = await fetch(path, options);
@@ -76,13 +89,28 @@ async function api(path, options) {
   return body;
 }
 
+// The `done` URL parameter selects which tasks to show: "true" (done),
+// "false" (not done), or absent for all.
+function currentDone() {
+  const done = new URLSearchParams(location.search).get('done');
+  return done === 'true' || done === 'false' ? done : null;
+}
+
+function emptyMessage(done) {
+  if (done === 'true') return 'No completed tasks.';
+  if (done === 'false') return 'No open tasks.';
+  return 'No tasks yet.';
+}
+
 async function load() {
-  const { tasks } = await api('/api/tasks');
+  const done = currentDone();
+  const query = done === null ? '' : '?done=' + encodeURIComponent(done);
+  const { tasks } = await api('/api/tasks' + query);
   list.replaceChildren();
   if (!tasks.length) {
     const empty = document.createElement('li');
     empty.className = 'empty';
-    empty.textContent = 'No tasks yet.';
+    empty.textContent = emptyMessage(done);
     list.append(empty);
     return;
   }
@@ -175,6 +203,21 @@ document.getElementById('new').addEventListener('submit', async event => {
     show(err);
   }
 });
+
+filter.addEventListener('change', () => {
+  const url = new URL(location.href);
+  if (filter.value === '') url.searchParams.delete('done');
+  else url.searchParams.set('done', filter.value);
+  history.pushState({}, '', url);
+  load().catch(show);
+});
+
+window.addEventListener('popstate', () => {
+  filter.value = currentDone() ?? '';
+  load().catch(show);
+});
+
+filter.value = currentDone() ?? '';
 
 load().catch(show);
 </script>
