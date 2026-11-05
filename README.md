@@ -5,7 +5,7 @@ board: a JSON HTTP API backed by an in-memory store, and a browser UI that
 talks to it.
 
 The point is not the task board. The point is having a repository where an
-agent can pick up a request from an issue, change code, add a test, and open a
+agent can pick up a reqest from an issue, change code, add a test, and open a
 pull request that a person can review.
 
 ## Run it
@@ -31,8 +31,8 @@ No dependencies, no build step.
 | Method | Path | Does |
 | --- | --- | --- |
 | `GET` | `/api/tasks` | Lists tasks |
-| `POST` | `/api/tasks` | Creates a task from `{"title": "…", "due": "YYYY-MM-DD", "priority": 1-5}` (`due` and `priority` are optional; priority defaults to 3) |
-| `PATCH` | `/api/tasks/:id` | Updates `title`, `done`, `due`, or `priority` |
+| `POST` | `/api/tasks` | Creates a task from `{"title": "…", "due": "YYYY-MM-DD"}` (`due` is optional) |
+| `PATCH` | `/api/tasks/:id` | Updates `title`, `done`, or `due` |
 | `DELETE` | `/api/tasks/:id` | Removes a task |
 
 ## Good things to ask the agent for
