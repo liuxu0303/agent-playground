@@ -30,6 +30,11 @@
   }
   li .title { flex: 1; }
   li.done .title { text-decoration: line-through; color: var(--muted); }
+  li input[type=date] {
+    padding: .25rem .5rem; font: inherit; color: var(--muted);
+    border: 1px solid transparent; border-radius: 6px; background: transparent;
+  }
+  li input[type=date]:hover, li input[type=date]:focus { border-color: var(--line); color: inherit; }
   .empty { color: var(--muted); padding: 1.5rem 0; text-align: center; }
   .error { color: #cf222e; font-size: .875rem; min-height: 1.25rem; margin: .5rem 0 0; }
 </style>
@@ -40,6 +45,7 @@
 
 <form id="new">
   <input id="title" type="text" placeholder="What needs doing?" autocomplete="off" required>
+  <input id="due" type="date" aria-label="Due date" title="Due date">
   <button type="submit">Add</button>
 </form>
 <p class="error" id="error"></p>
@@ -90,13 +96,27 @@ function row(task) {
   title.className = 'title';
   title.textContent = task.title;
 
+  const due = document.createElement('input');
+  due.type = 'date';
+  due.className = 'due';
+  due.value = task.due || '';
+  due.setAttribute('aria-label', 'Due date');
+  due.title = 'Due date';
+  due.addEventListener('change', async () => {
+    await api('/api/tasks/' + task.id, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ due: due.value || null }),
+    }).then(load).catch(show);
+  });
+
   const remove = document.createElement('button');
   remove.textContent = 'Remove';
   remove.addEventListener('click', async () => {
     await api('/api/tasks/' + task.id, { method: 'DELETE' }).then(load).catch(show);
   });
 
-  item.append(toggle, title, remove);
+  item.append(toggle, title, due, remove);
   return item;
 }
 
@@ -107,13 +127,15 @@ function show(err) {
 document.getElementById('new').addEventListener('submit', async event => {
   event.preventDefault();
   const input = document.getElementById('title');
+  const due = document.getElementById('due');
   try {
     await api('/api/tasks', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ title: input.value }),
+      body: JSON.stringify({ title: input.value, due: due.value || null }),
     });
     input.value = '';
+    due.value = '';
     error.textContent = '';
     await load();
   } catch (err) {
