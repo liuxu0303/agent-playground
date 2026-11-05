@@ -17,6 +17,16 @@ test('creates a task and assigns increasing ids', () => {
   assert.equal(tasks.length, 2);
 });
 
+test('stores an optional due date, defaulting to null', () => {
+  const withDue = store.create(tasks, { title: 'a', due: '2026-12-31' });
+  assert.equal(withDue.due, '2026-12-31');
+  const withoutDue = store.create(tasks, { title: 'b' });
+  assert.equal(withoutDue.due, null);
+  assert.throws(() => store.create(tasks, { title: 'c', due: 'not-a-date' }), /valid date/);
+  assert.throws(() => store.create(tasks, { title: 'd', due: 20261231 }), /valid date/);
+  assert.throws(() => store.create(tasks, { title: 'e', due: '2026-02-30' }), /valid date/);
+});
+
 test('trims the title and rejects an empty one', () => {
   assert.equal(store.create(tasks, { title: '  spaced  ' }).title, 'spaced');
   assert.throws(() => store.create(tasks, { title: '   ' }), /title is required/);
@@ -35,6 +45,13 @@ test('updates a task, and reports a missing one', () => {
   assert.equal(store.update(tasks, task.id, { done: true }).done, true);
   assert.equal(store.update(tasks, 999, { done: true }), null);
   assert.throws(() => store.update(tasks, task.id, { title: '' }), /title is required/);
+});
+
+test('updates and clears a due date', () => {
+  const task = store.create(tasks, { title: 'a' });
+  assert.equal(store.update(tasks, task.id, { due: '2027-01-01' }).due, '2027-01-01');
+  assert.equal(store.update(tasks, task.id, { due: null }).due, null);
+  assert.throws(() => store.update(tasks, task.id, { due: 'nope' }), /valid date/);
 });
 
 test('removes a task, and reports a missing one', () => {
